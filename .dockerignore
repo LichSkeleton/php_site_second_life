@@ -1,0 +1,6 @@
+.git
+.gitignore
+.env
+coursework_2023_1.sql
+docker/mysql/data
+*.md

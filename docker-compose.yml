@@ -1,0 +1,64 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    ports:
+      - "${APP_PORT:-8080}:80"
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: ${DB_NAME:-dinamic_site}
+      DB_USER: ${DB_USER:-blog_user}
+      DB_PASSWORD: ${DB_PASSWORD:-blog_pass}
+      DB_CHARSET: ${DB_CHARSET:-utf8mb4}
+      APP_URL: ${APP_URL:-http://localhost:8080}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@myblog.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      DEMO_USERNAME: ${DEMO_USERNAME:-demo}
+      DEMO_EMAIL: ${DEMO_EMAIL:-demo@myblog.local}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-user123}
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-dinamic_site}
+      MYSQL_USER: ${DB_USER:-blog_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-blog_pass}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_pass}
+    ports:
+      - "${MYSQL_HOST_PORT:-3307}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    ports:
+      - "${PHPMYADMIN_PORT:-8081}:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD:-root_pass}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:
