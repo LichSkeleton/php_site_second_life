@@ -26,7 +26,7 @@ if (!$post) {
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;700&display=swap" rel="stylesheet">
 
-   <title>Hello, world!</title>
+   <title><?= htmlspecialchars($post['title']); ?> | My blog</title>
 </head>
 
 <body>

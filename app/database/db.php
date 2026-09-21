@@ -215,7 +215,7 @@ function searchInTitleAndContent($text, $table1, $table2)
     JOIN $table2 AS u 
     ON p.id_user = u.id 
     WHERE p.status=1
-    AND p.title LIKE '%$text%' OR p.content LIKE '%$text%'";
+    AND (p.title LIKE '%$text%' OR p.content LIKE '%$text%')";
    $query = $pdo->prepare($sql);
    $query->execute();
    dbCheckError($query);

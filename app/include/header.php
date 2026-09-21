@@ -10,7 +10,7 @@
                 <ul>
                    <li><a href="<?php echo BASE_URL ?>">Home</a></li>
                    <li><a href="<?php echo BASE_URL . 'about.php'; ?>">About</a></li>
-                   <li><a href="#">Services</a></li>
+                   <li><a href="<?php echo BASE_URL . 'services.php'; ?>">Services</a></li>
 
                    <li>
                       <?php if (isset($_SESSION['id'])) : ?>

@@ -17,7 +17,7 @@ require_once "app/controllers/users.php";
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;700&display=swap" rel="stylesheet">
 
-   <title>Hello, world!</title>
+   <title>Sign up | My blog</title>
 </head>
 
 <body>

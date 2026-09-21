@@ -174,6 +174,59 @@ header ul li ul li a {
    transition: all 0.3s;
 }
 /*
+	Lab info blocks
+*/
+.blog-summary-bar,
+.author-card,
+.topic-card,
+.service-card,
+.reading-box {
+   background: white;
+   padding: 20px;
+   border-radius: 3px;
+   margin-bottom: 24px;
+}
+.blog-summary-bar h3,
+.author-card h3,
+.topic-card h3,
+.service-card h3,
+.reading-box h3 {
+   margin-bottom: 12px;
+}
+.blog-summary-bar ul {
+   margin: 0;
+   padding-left: 18px;
+}
+.blog-summary-bar li {
+   margin-bottom: 8px;
+}
+.topic-card h3 a:hover,
+.service-card h3 a:hover {
+   text-decoration: underline;
+   color: red;
+}
+.info-empty,
+.info-error,
+.info-ok {
+   background: white;
+   padding: 16px;
+   border-radius: 3px;
+   margin-bottom: 20px;
+}
+.info-error,
+div.err li {
+   color: #b00020;
+}
+.info-ok {
+   color: #0b6b3a;
+}
+.reading-box .text-input {
+   max-width: 280px;
+}
+.footer-content {
+   padding-bottom: 70px;
+}
+/*
 FOOTER
 */
 .footer {

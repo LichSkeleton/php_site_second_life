@@ -28,7 +28,7 @@ if (!$category) {
    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;700&display=swap" rel="stylesheet">
 
-   <title>Hello, world!</title>
+   <title><?= htmlspecialchars($category['name']); ?> | My blog</title>
 </head>
 
 <body>
@@ -41,7 +41,8 @@ if (!$category) {
          <!-- Main content -->
          <div class="main-content col-md-9 col-12">
 
-            <h2>Articles in <strong> <?= $category['name']; ?> </strong></h2>
+            <h2>Articles in <strong> <?= htmlspecialchars($category['name']); ?> </strong></h2>
+            <?php if (count($posts) > 0) : ?>
             <?php foreach ($posts as $post) : ?>
                <div class="post row">
                   <div class="img col-12 col-md-4">
@@ -59,6 +60,9 @@ if (!$category) {
                   </div>
                </div>
             <?php endforeach; ?>
+            <?php else : ?>
+               <p class="info-empty">There are no published posts in this category yet.</p>
+            <?php endif; ?>
 
          </div>
          <!-- Sidebar content -->

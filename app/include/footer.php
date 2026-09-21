@@ -1,15 +1,21 @@
+<?php
+if (!function_exists('getSiteAuthor')) {
+   require_once SITE_ROOT . '/app/helps/site-info.php';
+}
+$siteAuthor = getSiteAuthor();
+?>
     <div class="footer container-fluid">
       <div class="footer-content container">
         <div class="row">
           <div class="footer-section about col-md-4 col-12">
-            <h3 class="logo-text">My blog</h3>
+            <h3 class="logo-text"><?= htmlspecialchars($siteAuthor['project']); ?></h3>
             <p>
-              My blog is a learning project built to teach web development
-              and to practice PHP, MySQL, and Docker.
+              <?= htmlspecialchars($siteAuthor['work']); ?>.
+              The pages are assembled on the server with PHP.
             </p>
             <div class="contact">
-              <span><i>*</i> &nbsp; 123-456-789</span>
-              <span><i>*</i> &nbsp; info@myblog.com</span>
+              <span><i>*</i> &nbsp; <?= htmlspecialchars($siteAuthor['name']); ?></span>
+              <span><i>*</i> &nbsp; <?= htmlspecialchars($siteAuthor['email']); ?></span>
             </div>
             <div class="socials">
               <a href="#"><i>Face</i></a>
@@ -23,20 +29,20 @@
             <h3>Quick Links</h3>
             <br>
             <ul>
-              <a href="#">
-                <li>Events</li>
+              <a href="<?php echo BASE_URL; ?>">
+                <li>Home</li>
               </a>
-              <a href="#">
-                <li>Team</li>
+              <a href="<?php echo BASE_URL . 'about.php'; ?>">
+                <li>About</li>
               </a>
-              <a href="#">
-                <li>Exercises</li>
+              <a href="<?php echo BASE_URL . 'services.php'; ?>">
+                <li>Services</li>
               </a>
-              <a href="#">
-                <li>Gallery</li>
+              <a href="<?php echo BASE_URL . 'log.php'; ?>">
+                <li>Sign in</li>
               </a>
-              <a href="#">
-                <li>Something else</li>
+              <a href="<?php echo BASE_URL . 'reg.php'; ?>">
+                <li>Sign up</li>
               </a>
             </ul>
           </div>
@@ -44,10 +50,10 @@
           <div class="footer-section contact-formm col-md-4 col-12">
             <h3>Contact</h3>
             <br>
-            <form action="index1.html" method="post">
-              <input type="email" name="email" class="text-input contact-input" placeholder="Your email address...">  
-              <textarea rows="4" name="message" class="text-input contact-input" placeholder="Your message..."></textarea>
-              <button type="submit" class="btn btn-big contact-btn">
+            <form action="<?php echo BASE_URL . 'about.php#contact'; ?>" method="post">
+              <input type="email" name="email" class="text-input contact-input" placeholder="Your email address..." value="<?= htmlspecialchars($contactEmail ?? ''); ?>">  
+              <textarea rows="4" name="message" class="text-input contact-input" placeholder="Your message..."><?= htmlspecialchars($contactText ?? ''); ?></textarea>
+              <button type="submit" name="send-contact" class="btn btn-big contact-btn">
                 <i>*</i>
                 Send
               </button>            
@@ -56,7 +62,7 @@
         </div>
 
         <div class="footer-bottom">
-          &copy; Vladyslav Zaplitnyi
+          &copy; <?= htmlspecialchars($siteAuthor['name']); ?>
         </div>
       </div>
     </div>
