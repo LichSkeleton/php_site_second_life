@@ -1,7 +1,7 @@
 <?php
 require_once "../../path.php";
-require_once "../../app/controllers/posts.php";
 require_once SITE_ROOT . "/app/include/admin-auth.php";
+require_once "../../app/controllers/posts.php";
 ?>
 <!doctype html>
 <html lang="en">
@@ -41,33 +41,26 @@ require_once SITE_ROOT . "/app/include/admin-auth.php";
                <form action="edit.php" method="post" enctype="multipart/form-data">
                   <input type="hidden" name="id" value="<?= $id; ?>">
                   <div class="col mb-4">
-                     <input value="<?= $title; ?>" name="title" type="text" class="form-control" placeholder="Title" aria-label="Post title">
+                     <input value="<?= htmlspecialchars($title); ?>" name="title" type="text" class="form-control" placeholder="Title" aria-label="Post title">
                   </div>
                   <div class="col">
                      <label for="editor" class="form-label">Post content</label>
-                     <textarea name="content" id="editor" class="form-control" rows="6"><?= $content; ?></textarea>
+                     <textarea name="content" id="editor" class="form-control" rows="6"><?= htmlspecialchars($content); ?></textarea>
                   </div>
                   <div class="input-group col mb-4 mt-4">
                      <input name="img" type="file" class="form-control" id="inputGroupFile02">
                      <label class="input-group-text" for="inputGroupFile02">Upload</label>
                   </div>
                   <select name="topic" class="form-select mb-2" aria-label="Default select example">
-                     <?php foreach ($topics as $key => $topic) : ?>
-                        <option value="<?= $topic['id'] ?>"><?= $topic['name'] ?></option>
+                     <?php foreach ($topics as $topicItem) : ?>
+                        <option value="<?= (int) $topicItem['id'] ?>" <?= (string) $topic === (string) $topicItem['id'] ? 'selected' : '' ?>><?= htmlspecialchars($topicItem['name']) ?></option>
                      <?php endforeach; ?>
                   </select>
                   <div class="form-check">
-                     <?php if (empty($publish) && $publish == 0) : ?>
-                        <input name="publish" class="form-check-input" type="checkbox" id="flexCheckChecked">
-                        <label class="form-check-label" for="flexCheckChecked">
-                           Publish
-                        </label>
-                     <?php else : ?>
-                        <input name="publish" class="form-check-input" type="checkbox" id="flexCheckChecked" checked>
-                        <label class="form-check-label" for="flexCheckChecked">
-                           Publish
-                        </label>
-                     <?php endif; ?>
+                     <input name="publish" class="form-check-input" type="checkbox" value="1" id="flexCheckChecked" <?= ((int) $publish === 1) ? 'checked' : '' ?>>
+                     <label class="form-check-label" for="flexCheckChecked">
+                        Publish
+                     </label>
                   </div>
                   <div class="col col-6">
                      <button name="edit_post" class="btn btn-primary" type="submit">Save post</button>

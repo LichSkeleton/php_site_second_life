@@ -1,7 +1,7 @@
 <?php
 require_once "../../path.php";
-require_once "../../app/controllers/users.php";
 require_once SITE_ROOT . "/app/include/admin-auth.php";
+require_once "../../app/controllers/users.php";
 ?>
 <!doctype html>
 <html lang="en">
@@ -47,11 +47,11 @@ require_once SITE_ROOT . "/app/include/admin-auth.php";
                   <input name="id" value="<?= $id; ?>" type="hidden">
                   <div class="col">
                      <label for="formGroupExampleInput" class="form-label">Username</label>
-                     <input name="login" value="<?= $username; ?>" type="text" class="form-control" id="formGroupExampleInput" placeholder="enter username...">
+                     <input name="login" value="<?= htmlspecialchars($username); ?>" type="text" class="form-control" id="formGroupExampleInput" placeholder="enter username...">
                   </div>
                   <div class="col">
                      <label for="exampleInputEmail1" class="form-label">Email</label>
-                     <input readonly name="mail" value="<?= $email; ?>" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="enter email...">
+                     <input readonly name="mail" value="<?= htmlspecialchars($email); ?>" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="enter email...">
                   </div>
                   <div class="col">
                      <label for="exampleInputPassword1" class="form-label">Reset password</label>
@@ -61,7 +61,13 @@ require_once SITE_ROOT . "/app/include/admin-auth.php";
                      <label for="exampleInputPassword2" class="form-label">Repeat password</label>
                      <input name="pass-second" type="password" class="form-control" id="exampleInputPassword2" placeholder="repeat password...">
                   </div>
-                  <input name="admin-pub" class="form-check-input" value="1" type="checkbox" id="flexCheckChecked">
+                  <?php $editingSelf = (int) $id === (int) ($_SESSION['id'] ?? 0); ?>
+                  <?php if ($editingSelf) : ?>
+                     <input type="hidden" name="admin-pub" value="1">
+                     <input class="form-check-input" type="checkbox" id="flexCheckChecked" checked disabled>
+                  <?php else : ?>
+                     <input name="admin-pub" class="form-check-input" value="1" type="checkbox" id="flexCheckChecked" <?= ((int) $admin === 1) ? 'checked' : '' ?>>
+                  <?php endif; ?>
                   <label class="form-check-label" for="flexCheckChecked">
                      Admin
                   </label>

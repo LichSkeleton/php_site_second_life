@@ -1,7 +1,7 @@
 <?php
 require_once "../../path.php";
-require_once "../../app/controllers/posts.php";
 require_once SITE_ROOT . "/app/include/admin-auth.php";
+require_once "../../app/controllers/posts.php";
 ?>
 <!doctype html>
 <html lang="en">
@@ -44,7 +44,7 @@ require_once SITE_ROOT . "/app/include/admin-auth.php";
             </div>
             <?php foreach ($postsAdm as $key => $post) : ?>
                <div class="row post">
-                  <div class="id col-1"><?= $key + 1; ?></div>
+                  <div class="id col-1"><?= (int) $post['id']; ?></div>
                   <div class="title col-5"><?= mb_substr($post['title'], 0, 50, 'UTF-8') . "..." ?></div>
                   <div class="author col-2"><?= $post['username']; ?></div>
                   <div class="red col-1"><a href="edit.php?id=<?= $post['id']; ?>">edit</a></div>

@@ -5,6 +5,13 @@ $errMsg = [];
 $id = '';
 $username = '';
 $admin = 0;
+$login = '';
+$email = '';
+
+if (!empty($_SESSION['flash_error'])) {
+   $errMsg[] = $_SESSION['flash_error'];
+   unset($_SESSION['flash_error']);
+}
 
 if (!function_exists('userAuth')) {
 function userAuth($user)
@@ -13,7 +20,7 @@ function userAuth($user)
    $_SESSION['login'] = $user['username'];
    $_SESSION['admin'] = $user['admin'];
 
-   if ($_SESSION['admin']) {
+   if ((int) $_SESSION['admin'] === 1) {
       header('location: ' . BASE_URL . "admin/posts/index.php");
    } else {
       header('location: ' . BASE_URL);
@@ -22,21 +29,32 @@ function userAuth($user)
 }
 }
 
+function textLength($value)
+{
+   return mb_strlen($value, 'UTF-8');
+}
+
 $users = selectAll('users');
+$isUserAdmin = isset($_SERVER['SCRIPT_NAME']) && str_contains($_SERVER['SCRIPT_NAME'], '/admin/users/');
+
+function userActorIsAdmin()
+{
+   return !empty($_SESSION['id']) && (int) ($_SESSION['admin'] ?? 0) === 1;
+}
 
 // Registration form
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['button-reg'])) {
-
-   $admin = 0;
-   $login = trim($_POST['login']);
-   $email = trim($_POST['mail']);
-   $passF = trim($_POST['pass-first']);
-   $passS = trim($_POST['pass-second']);
+   $login = trim($_POST['login'] ?? '');
+   $email = trim($_POST['mail'] ?? '');
+   $passF = trim($_POST['pass-first'] ?? '');
+   $passS = trim($_POST['pass-second'] ?? '');
 
    if ($login === '' || $email === '' || $passF === '' || $passS === '') {
       array_push($errMsg, "Please fill in all fields!");
-   } elseif (mb_strlen($login, 'UTF8') < 2) {
+   } elseif (textLength($login) < 2) {
       array_push($errMsg, "The username must be longer than 2 characters");
+   } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      array_push($errMsg, "Enter a valid email address.");
    } elseif ($passF !== $passS) {
       array_push($errMsg, "The passwords in both fields must match!");
    } else {
@@ -44,60 +62,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['button-reg'])) {
       if ($existennce && $existennce['email'] === $email) {
          array_push($errMsg, "A user with this email is already registered!");
       } else {
-         $pass = password_hash($passF, PASSWORD_DEFAULT);
-         $post = [
-            'admin' => $admin,
+         $id = insert('users', [
+            'admin' => 0,
             'username' => $login,
             'email' => $email,
-            'password' => $pass
-         ];
-         $id = insert('users', $post);
+            'password' => password_hash($passF, PASSWORD_DEFAULT)
+         ]);
          $user = selectOne('users', ['id' => $id]);
-
          userAuth($user);
       }
    }
-} else {
-   $login = '';
-   $email = '';
 }
 
 // Login form
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['button-log'])) {
-
-   $email = trim($_POST['mail']);
-   $pass = trim($_POST['password']);
+   $email = trim($_POST['mail'] ?? '');
+   $pass = trim($_POST['password'] ?? '');
 
    if ($email === '' || $pass === '') {
       array_push($errMsg, "Please fill in all fields!");
    } else {
       $existennce = selectOne('users', ['email' => $email]);
       if ($existennce && password_verify($pass, $existennce['password'])) {
-
          userAuth($existennce);
       } else {
-         // Login error
          array_push($errMsg, "Email or password is incorrect!");
       }
    }
-} else {
-   $email = '';
 }
 
 // Add user from the admin panel
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create-user'])) {
-
-
-   $admin = 0;
-   $login = trim($_POST['login']);
-   $email = trim($_POST['mail']);
-   $passF = trim($_POST['pass-first']);
-   $passS = trim($_POST['pass-second']);
+if ($isUserAdmin && userActorIsAdmin() && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create-user'])) {
+   $login = trim($_POST['login'] ?? '');
+   $email = trim($_POST['mail'] ?? '');
+   $passF = trim($_POST['pass-first'] ?? '');
+   $passS = trim($_POST['pass-second'] ?? '');
+   $admin = isset($_POST['admin-pub']) ? 1 : 0;
 
    if ($login === '' || $email === '' || $passF === '' || $passS === '') {
       array_push($errMsg, "Please fill in all fields!");
-   } elseif (mb_strlen($login, 'UTF8') < 2) {
+   } elseif (textLength($login) < 2) {
       array_push($errMsg, "The username must be longer than 2 characters");
+   } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+      array_push($errMsg, "Enter a valid email address.");
    } elseif ($passF !== $passS) {
       array_push($errMsg, "The passwords in both fields must match!");
    } else {
@@ -105,35 +112,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create-user'])) {
       if ($existennce && $existennce['email'] === $email) {
          array_push($errMsg, "A user with this email is already registered!");
       } else {
-         $pass = password_hash($passF, PASSWORD_DEFAULT);
-         if (isset($_POST['admin-pub'])) $admin = 1;
-         $post = [
+         insert('users', [
             'admin' => $admin,
             'username' => $login,
             'email' => $email,
-            'password' => $pass
-         ];
-         $id = insert('users', $post);
-         $user = selectOne('users', ['id' => $id]);
-
-         userAuth($user);
+            'password' => password_hash($passF, PASSWORD_DEFAULT)
+         ]);
+         header('location: ' . BASE_URL . 'admin/users/index.php');
+         exit();
       }
    }
-} else {
-   $login = '';
-   $email = '';
 }
 
 // Delete user from the admin panel
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['delete_id'])) {
-   $id = $_GET['delete_id'];
-   delete('users', $id);
+if ($isUserAdmin && userActorIsAdmin() && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['delete_id'])) {
+   $id = (int) $_GET['delete_id'];
+   $target = selectOne('users', ['id' => $id]);
+   $adminCount = 0;
+   foreach ($users as $existingUser) {
+      if ((int) $existingUser['admin'] === 1) {
+         $adminCount++;
+      }
+   }
+
+   if (!$target) {
+      $_SESSION['flash_error'] = "User not found.";
+   } elseif ((int) $target['id'] === (int) ($_SESSION['id'] ?? 0)) {
+      $_SESSION['flash_error'] = "You cannot delete your own account.";
+   } elseif ((int) $target['admin'] === 1 && $adminCount <= 1) {
+      $_SESSION['flash_error'] = "You cannot delete the only administrator.";
+   } else {
+      delete('users', $id);
+   }
    header('location: ' . BASE_URL . 'admin/users/index.php');
    exit();
 }
 
 // Edit user from the admin panel
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['edit_id'])) {
+if ($isUserAdmin && userActorIsAdmin() && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['edit_id'])) {
    $user = selectOne('users', ['id' => $_GET['edit_id']]);
    if ($user) {
       $id = $user['id'];
@@ -142,37 +158,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['edit_id'])) {
       $email = $user['email'];
    }
 }
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update-user'])) {
 
-   $id = $_POST['id'];
-   $mail = trim($_POST['mail']);
-   $login = trim($_POST['login']);
-   $passF = trim($_POST['pass-first']);
-   $passS = trim($_POST['pass-second']);
+if ($isUserAdmin && userActorIsAdmin() && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update-user'])) {
+   $id = (int) ($_POST['id'] ?? 0);
+   $email = trim($_POST['mail'] ?? '');
+   $login = trim($_POST['login'] ?? '');
+   $username = $login;
+   $passF = trim($_POST['pass-first'] ?? '');
+   $passS = trim($_POST['pass-second'] ?? '');
    $admin = isset($_POST['admin-pub']) ? 1 : 0;
+   $isSelf = (int) $id === (int) ($_SESSION['id'] ?? 0);
 
-   if ($login === '') {
+   if ($isSelf) {
+      $admin = 1;
+   }
+
+   if ($login === '' || $email === '') {
       array_push($errMsg, "Please fill in all fields!");
-   } elseif (mb_strlen($login, 'UTF8') < 2) {
+   } elseif (textLength($login) < 2) {
       array_push($errMsg, "The username must be longer than 2 characters");
-   } elseif ($passF !== $passS) {
-      array_push($errMsg, "The passwords in both fields must match!");
+   } elseif ($passF !== '' || $passS !== '') {
+      if ($passF !== $passS) {
+         array_push($errMsg, "The passwords in both fields must match!");
+      } else {
+         $updated = [
+            'admin' => $admin,
+            'username' => $login,
+            'password' => password_hash($passF, PASSWORD_DEFAULT)
+         ];
+         update('users', $id, $updated);
+         if ($isSelf) {
+            $_SESSION['login'] = $login;
+            $_SESSION['admin'] = 1;
+         }
+         header('location: ' . BASE_URL . 'admin/users/index.php');
+         exit();
+      }
    } else {
-      $pass = password_hash($passF, PASSWORD_DEFAULT);
-      if (isset($_POST['admin-pub'])) $admin = 1;
-      $add_post = [
+      update('users', $id, [
          'admin' => $admin,
-         'username' => $login,
-         'password' => $pass
-      ];
-
-      $user = update('users', $id, $add_post);
+         'username' => $login
+      ]);
+      if ($isSelf) {
+         $_SESSION['login'] = $login;
+         $_SESSION['admin'] = 1;
+      }
       header('location: ' . BASE_URL . 'admin/users/index.php');
       exit();
    }
-} elseif (isset($user) && is_array($user)) {
-   $login = $user['id'];
-   $admin = $user['admin'];
-   $username = $user['username'];
-   $email = $user['email'];
 }

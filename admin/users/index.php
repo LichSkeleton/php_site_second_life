@@ -1,7 +1,7 @@
 <?php
 require_once "../../path.php";
-require_once "../../app/controllers/users.php";
 require_once SITE_ROOT . "/app/include/admin-auth.php";
+require_once "../../app/controllers/users.php";
 ?>
 <!doctype html>
 <html lang="en">
@@ -34,6 +34,9 @@ require_once SITE_ROOT . "/app/include/admin-auth.php";
                <a href="<?php echo BASE_URL . "admin/users/create.php"; ?>" class="col-2 btn btn-success">Create</a>
                <span class="col-1"></span>
                <a href="<?php echo BASE_URL . "admin/users/index.php"; ?>" class="col-3 btn btn-warning">Edit</a>
+            </div>
+            <div class="mb-12 col-12 col-md-12 err">
+               <?php include "../../app/helps/errorInfo.php"; ?>
             </div>
             <div class="row title-table">
                <h2>Users</h2>

@@ -1,7 +1,7 @@
 <?php
 require_once "../../path.php";
-require_once "../../app/controllers/users.php";
 require_once SITE_ROOT . "/app/include/admin-auth.php";
+require_once "../../app/controllers/users.php";
 ?>
 <!doctype html>
 <html lang="en">

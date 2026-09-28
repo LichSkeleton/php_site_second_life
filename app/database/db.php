@@ -35,30 +35,39 @@ function dbCheckError($query)
    }
    return true;
 }
+function dbIdent($name)
+{
+   if (!is_string($name) || !preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $name)) {
+      throw new InvalidArgumentException('Invalid SQL identifier');
+   }
+   return '`' . $name . '`';
+}
+
+function dbWhere($params)
+{
+   $clauses = [];
+   $values = [];
+   foreach ($params as $key => $value) {
+      $clauses[] = dbIdent((string) $key) . ' = ?';
+      $values[] = $value;
+   }
+   return [$clauses, $values];
+}
+
 // Fetch all rows from one table
 function selectAll($table, $params = [])
 {
    global $pdo;
-   $sql = "SELECT * FROM $table";
+   $sql = 'SELECT * FROM ' . dbIdent($table);
+   $values = [];
 
    if (!empty($params)) {
-      //echo tt($params);
-      $i = 0;
-      foreach ($params as $key => $value) {
-         if (!is_numeric($value)) {
-            $value = "'" . $value . "'";
-         }
-         if ($i === 0) {
-            $sql = $sql . " WHERE $key = $value";
-         } else {
-            $sql = $sql . " AND $key = $value";
-         }
-         $i++;
-      }
+      [$clauses, $values] = dbWhere($params);
+      $sql .= ' WHERE ' . implode(' AND ', $clauses);
    }
 
    $query = $pdo->prepare($sql);
-   $query->execute();
+   $query->execute($values);
    dbCheckError($query);
    return $query->fetchAll();
 }
@@ -67,26 +76,17 @@ function selectAll($table, $params = [])
 function selectOne($table, $params = [])
 {
    global $pdo;
-   $sql = "SELECT * FROM $table";
+   $sql = 'SELECT * FROM ' . dbIdent($table);
+   $values = [];
 
    if (!empty($params)) {
-      $i = 0;
-      foreach ($params as $key => $value) {
-         if (!is_numeric($value)) {
-            $value = "'" . $value . "'";
-         }
-         if ($i === 0) {
-            $sql = $sql . " WHERE $key = $value";
-         } else {
-            $sql = $sql . " AND $key = $value";
-         }
-         $i++;
-      }
+      [$clauses, $values] = dbWhere($params);
+      $sql .= ' WHERE ' . implode(' AND ', $clauses);
    }
-   $sql = $sql . " LIMIT 1";
+   $sql .= ' LIMIT 1';
 
    $query = $pdo->prepare($sql);
-   $query->execute();
+   $query->execute($values);
    dbCheckError($query);
    return $query->fetch();
 }
@@ -95,24 +95,19 @@ function selectOne($table, $params = [])
 function insert($table, $params)
 {
    global $pdo;
-   $i = 0;
-   $coll = '';
-   $mask = '';
+   $columns = [];
+   $placeholders = [];
+   $values = [];
    foreach ($params as $key => $value) {
-      if ($i === 0) {
-         $coll = $coll . "$key";
-         $mask = $mask . "'" . "$value" . "'";
-      } else {
-         $coll = $coll . ", $key";
-         $mask = $mask . ", '" . "$value" . "'";
-      }
-      $i++;
+      $columns[] = dbIdent((string) $key);
+      $placeholders[] = '?';
+      $values[] = $value;
    }
 
-   $sql = "INSERT INTO $table ($coll) VALUES ($mask)";
+   $sql = 'INSERT INTO ' . dbIdent($table) . ' (' . implode(', ', $columns) . ') VALUES (' . implode(', ', $placeholders) . ')';
 
    $query = $pdo->prepare($sql);
-   $query->execute();
+   $query->execute($values);
    dbCheckError($query);
    return $pdo->lastInsertId();
 }
@@ -121,20 +116,17 @@ function insert($table, $params)
 function update($table, $id, $params)
 {
    global $pdo;
-   $i = 0;
-   $str = '';
+   $assignments = [];
+   $values = [];
    foreach ($params as $key => $value) {
-      if ($i === 0) {
-         $str = $str . $key . " = '" . $value . "'";
-      } else {
-         $str = $str . ", " . $key . " = '" . $value . "'";
-      }
-      $i++;
+      $assignments[] = dbIdent((string) $key) . ' = ?';
+      $values[] = $value;
    }
-   $sql = "UPDATE $table SET $str WHERE id = $id";
+   $values[] = (int) $id;
+   $sql = 'UPDATE ' . dbIdent($table) . ' SET ' . implode(', ', $assignments) . ' WHERE id = ?';
 
    $query = $pdo->prepare($sql);
-   $query->execute();
+   $query->execute($values);
    dbCheckError($query);
 }
 
@@ -142,11 +134,10 @@ function update($table, $id, $params)
 function delete($table, $id)
 {
    global $pdo;
-
-   $sql = "DELETE FROM $table WHERE id =" . $id;
+   $sql = 'DELETE FROM ' . dbIdent($table) . ' WHERE id = ?';
 
    $query = $pdo->prepare($sql);
-   $query->execute();
+   $query->execute([(int) $id]);
    dbCheckError($query);
 }
 
@@ -154,6 +145,8 @@ function delete($table, $id)
 function selectAllFromPostsWithUsers($table1, $table2)
 {
    global $pdo;
+   $posts = dbIdent($table1);
+   $users = dbIdent($table2);
    $sql = "
    SELECT 
    t1.id,
@@ -164,7 +157,7 @@ function selectAllFromPostsWithUsers($table1, $table2)
    t1.id_topic,
    t1.created_date,
    t2.username
-   FROM $table1 AS t1 JOIN $table2 AS t2 ON t1.id_user = t2.id";
+   FROM $posts AS t1 JOIN $users AS t2 ON t1.id_user = t2.id";
    $query = $pdo->prepare($sql);
    $query->execute();
    dbCheckError($query);
@@ -174,10 +167,11 @@ function selectAllFromPostsWithUsers($table1, $table2)
 function selectPostsByTopicWithUsers($table1, $table2, $topicId)
 {
    global $pdo;
-   $topicId = (int) $topicId;
-   $sql = "SELECT p.*, u.username FROM $table1 AS p JOIN $table2 AS u ON p.id_user = u.id WHERE p.status=1 AND p.id_topic = $topicId";
+   $posts = dbIdent($table1);
+   $users = dbIdent($table2);
+   $sql = "SELECT p.*, u.username FROM $posts AS p JOIN $users AS u ON p.id_user = u.id WHERE p.status=1 AND p.id_topic = ?";
    $query = $pdo->prepare($sql);
-   $query->execute();
+   $query->execute([(int) $topicId]);
    dbCheckError($query);
    return $query->fetchAll();
 }
@@ -186,7 +180,11 @@ function selectPostsByTopicWithUsers($table1, $table2, $topicId)
 function selectAllFromPostsWithUsersOnIndex($table1, $table2, $limit, $offset)
 {
    global $pdo;
-   $sql = "SELECT p.*, u.username FROM $table1 AS p JOIN $table2 AS u ON p.id_user = u.id WHERE p.status=1 LIMIT $limit OFFSET $offset";
+   $posts = dbIdent($table1);
+   $users = dbIdent($table2);
+   $limit = max(0, (int) $limit);
+   $offset = max(0, (int) $offset);
+   $sql = "SELECT p.*, u.username FROM $posts AS p JOIN $users AS u ON p.id_user = u.id WHERE p.status=1 ORDER BY p.id DESC LIMIT $limit OFFSET $offset";
    $query = $pdo->prepare($sql);
    $query->execute();
    dbCheckError($query);
@@ -197,7 +195,7 @@ function selectAllFromPostsWithUsersOnIndex($table1, $table2, $limit, $offset)
 function selectTopTopicFromPostsOnIndex($table1)
 {
    global $pdo;
-   $sql = "SELECT * FROM $table1 WHERE id_topic = 8";
+   $sql = 'SELECT * FROM ' . dbIdent($table1) . ' WHERE id_topic = 8 AND status = 1';
    $query = $pdo->prepare($sql);
    $query->execute();
    dbCheckError($query);
@@ -208,16 +206,19 @@ function selectTopTopicFromPostsOnIndex($table1)
 function searchInTitleAndContent($text, $table1, $table2)
 {
    global $pdo;
-   $text = trim(strip_tags(stripslashes(htmlspecialchars($text))));
+   $text = trim(strip_tags((string) $text));
+   $posts = dbIdent($table1);
+   $users = dbIdent($table2);
+   $like = '%' . $text . '%';
    $sql = "SELECT
     p.*, u.username 
-    FROM $table1 AS p 
-    JOIN $table2 AS u 
+    FROM $posts AS p 
+    JOIN $users AS u 
     ON p.id_user = u.id 
     WHERE p.status=1
-    AND (p.title LIKE '%$text%' OR p.content LIKE '%$text%')";
+    AND (p.title LIKE ? OR p.content LIKE ?)";
    $query = $pdo->prepare($sql);
-   $query->execute();
+   $query->execute([$like, $like]);
    dbCheckError($query);
    return $query->fetchAll();
 }
@@ -226,9 +227,11 @@ function searchInTitleAndContent($text, $table1, $table2)
 function selectPostFromPostsWithUserOnSingle($table1, $table2, $id)
 {
    global $pdo;
-   $sql = "SELECT p.*, u.username FROM $table1 AS p JOIN $table2 AS u ON p.id_user = u.id WHERE p.id=$id";
+   $posts = dbIdent($table1);
+   $users = dbIdent($table2);
+   $sql = "SELECT p.*, u.username FROM $posts AS p JOIN $users AS u ON p.id_user = u.id WHERE p.id = ?";
    $query = $pdo->prepare($sql);
-   $query->execute();
+   $query->execute([(int) $id]);
    dbCheckError($query);
    return $query->fetch();
 }
@@ -237,7 +240,7 @@ function selectPostFromPostsWithUserOnSingle($table1, $table2, $id)
 function countRow($table)
 {
    global $pdo;
-   $sql = "SELECT COUNT(*) FROM $table WHERE status = 1";
+   $sql = 'SELECT COUNT(*) FROM ' . dbIdent($table) . ' WHERE status = 1';
    $query = $pdo->prepare($sql);
    $query->execute();
    dbCheckError($query);

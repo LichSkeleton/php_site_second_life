@@ -1,7 +1,7 @@
 <?php
 require_once "../../path.php";
-require_once "../../app/controllers/topics.php";
 require_once SITE_ROOT . "/app/include/admin-auth.php";
+require_once "../../app/controllers/topics.php";
 ?>
 <!doctype html>
 <html lang="en">
@@ -43,7 +43,7 @@ require_once SITE_ROOT . "/app/include/admin-auth.php";
             </div>
             <?php foreach ($topics as $key => $topic) : ?>
                <div class="row post">
-                  <div class="id col-1"><?= $key + 1; ?></div>
+                  <div class="id col-1"><?= (int) $topic['id']; ?></div>
                   <div class="title col-5"><?= $topic['name']; ?></div>
                   <div class="red col-2"><a href="edit.php?id=<?= $topic['id']; ?>">edit</a></div>
                   <div class="del col-2"><a href="edit.php?del-id=<?= $topic['id']; ?>">delete</a></div>

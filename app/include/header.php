@@ -15,7 +15,7 @@
                    <li>
                       <?php if (isset($_SESSION['id'])) : ?>
                          <a href="#">
-                            <?php echo $_SESSION['login']; ?>
+                            <?php echo htmlspecialchars($_SESSION['login']); ?>
                          </a>
                          <ul>
                             <?php if ($_SESSION['admin']) : ?>

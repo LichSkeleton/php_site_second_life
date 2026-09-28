@@ -1,7 +1,7 @@
 <?php
 require_once "../../path.php";
-require_once "../../app/controllers/commentaries.php";
 require_once SITE_ROOT . "/app/include/admin-auth.php";
+require_once "../../app/controllers/commentaries.php";
 ?>
 <!doctype html>
 <html lang="en">
@@ -40,7 +40,7 @@ require_once SITE_ROOT . "/app/include/admin-auth.php";
             <?php foreach ($commentsForAdm as $key => $comment) : ?>
                <div class="row post">
                   <div class="id col-1"><?= $comment['id']; ?></div>
-                  <div class="title col-5"><?= mb_substr($comment['comment'], 0, 45, 'UTF-8') . "..." ?></div>
+                  <div class="title col-5"><?= htmlspecialchars(mb_substr($comment['comment'], 0, 45, 'UTF-8')) . "..." ?></div>
                   <?php
                   $user = $comment['email'];
                   $user = explode('@', $user);

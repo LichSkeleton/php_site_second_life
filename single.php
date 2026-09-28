@@ -7,7 +7,8 @@ if (!$post) {
    header('location: ' . BASE_URL);
    exit();
 }
-//tt($post);
+$page = $postId;
+require_once "app/controllers/commentaries.php";
 ?>
 <!doctype html>
 <html lang="en">

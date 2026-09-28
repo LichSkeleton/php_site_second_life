@@ -1,7 +1,7 @@
 <?php
 require_once "../../path.php";
-require_once "../../app/controllers/commentaries.php";
 require_once SITE_ROOT . "/app/include/admin-auth.php";
+require_once "../../app/controllers/commentaries.php";
 ?>
 <!doctype html>
 <html lang="en">
@@ -39,13 +39,13 @@ require_once SITE_ROOT . "/app/include/admin-auth.php";
                   <?php include "../../app/helps/errorInfo.php"; ?>
                </div>
                <form action="edit.php" method="post">
-                  <input type="hidden" name="id" value="<?= $id; ?>">
+                  <input type="hidden" name="id" value="<?= (int) $id; ?>">
                   <div class="col mb-4">
-                     <input value="<?= $email; ?>" readonly name="title" type="text" class="form-control" placeholder="Title" aria-label="Post title">
+                     <input value="<?= htmlspecialchars($email); ?>" readonly name="title" type="text" class="form-control" placeholder="Title" aria-label="Post title">
                   </div>
                   <div class="col">
-                     <label for="editor" class="form-label">Comment</label>
-                     <textarea name="content" id="editor" class="form-control" rows="6"><?= $text1; ?></textarea>
+                     <label for="comment-text" class="form-label">Comment</label>
+                     <textarea name="content" id="comment-text" class="form-control" rows="6"><?= htmlspecialchars($text1); ?></textarea>
                   </div>
                   <div class="form-check">
                      <?php if ($pub) $checked = "checked";
@@ -72,14 +72,12 @@ require_once SITE_ROOT . "/app/include/admin-auth.php";
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 
    <!-- Attach the visual editor to the admin textarea -->
-   <script src="https://cdn.ckeditor.com/ckeditor5/31.1.0/classic/ckeditor.js"></script>
 
    <!-- Option 2: Separate Popper and Bootstrap JS -->
    <!--
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
     -->
-   <script src="../../assets/js/scripts.js"></script>
 </body>
 
 </html>

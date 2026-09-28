@@ -10,7 +10,7 @@
             <ul>
                <li>
                   <a href="#">
-                     <?php echo $_SESSION['login'] ?? ''; ?>
+                     <?php echo htmlspecialchars($_SESSION['login'] ?? ''); ?>
                   </a>
                </li>
                <li>
