@@ -15,7 +15,8 @@ On Linux/macOS use `cp .env.example .env` instead of `copy`.
 
 | Service | URL |
 | --- | --- |
-| Site | http://localhost:8080 |
+| Site (previous labs, plain PHP) | http://localhost:8080 |
+| Laravel blog (this laboratory) | http://localhost:8082 |
 | phpMyAdmin | http://localhost:8081 |
 
 Stop: `docker compose down`  
@@ -87,3 +88,24 @@ index.php       home page (same frontend)
 ```
 
 Table schema: `docker/mysql/schema.sql` (`users`, `topics`, `posts`, `comments`).
+
+## Laravel laboratory
+
+`laravel-blog/` is the same blog moved onto Laravel 13: routes, controllers, Eloquent models, Blade views, MySQL migrations, server-side validation, and a JSON API. It uses a separate database, `laravel_blog`, so the plain PHP site on port 8080 stays intact.
+
+Open http://localhost:8082 after `docker compose up --build -d`.
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@myblog.local` | `admin123` |
+| User | `demo@myblog.local` | `user123` |
+
+Sign in, then create, edit, or delete a post. A post has a title, text, image, and published status, and it belongs to a category.
+
+API (also described at http://localhost:8082/api-help):
+
+- `GET http://localhost:8082/api/posts`
+- `GET http://localhost:8082/api/posts/1`
+- `POST`, `PUT`, and `DELETE` on the same path
+
+The main post is **Post**. It has four of its own fields (`title`, `content`, `image`, `status`) and a required link to **Topic**, plus the author from **User**.
