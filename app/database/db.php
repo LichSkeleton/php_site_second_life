@@ -156,8 +156,10 @@ function selectAllFromPostsWithUsers($table1, $table2)
    t1.status,
    t1.id_topic,
    t1.created_date,
+   t1.updated_date,
    t2.username
-   FROM $posts AS t1 JOIN $users AS t2 ON t1.id_user = t2.id";
+   FROM $posts AS t1 JOIN $users AS t2 ON t1.id_user = t2.id
+   ORDER BY t1.status ASC, t1.created_date ASC, t1.id ASC";
    $query = $pdo->prepare($sql);
    $query->execute();
    dbCheckError($query);
@@ -246,3 +248,55 @@ function countRow($table)
    dbCheckError($query);
    return $query->fetchColumn();
 }
+
+// Older databases were created before updated_date existed.
+function ensurePostsUpdatedDate()
+{
+   global $pdo;
+   $column = $pdo->prepare(
+      'SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?'
+   );
+   $column->execute(['posts', 'updated_date']);
+   if ((int) $column->fetchColumn() > 0) {
+      return;
+   }
+
+   $table = $pdo->prepare(
+      'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?'
+   );
+   $table->execute(['posts']);
+   if ((int) $table->fetchColumn() === 0) {
+      return;
+   }
+
+   $pdo->exec(
+      'ALTER TABLE `posts` ADD COLUMN `updated_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER `created_date`'
+   );
+   $pdo->exec('UPDATE `posts` SET `updated_date` = `created_date`');
+}
+
+ensurePostsUpdatedDate();
+
+function ensureUsersLastLogin()
+{
+   global $pdo;
+   $column = $pdo->prepare(
+      'SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?'
+   );
+   $column->execute(['users', 'last_login']);
+   if ((int) $column->fetchColumn() > 0) {
+      return;
+   }
+
+   $table = $pdo->prepare(
+      'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?'
+   );
+   $table->execute(['users']);
+   if ((int) $table->fetchColumn() === 0) {
+      return;
+   }
+
+   $pdo->exec('ALTER TABLE `users` ADD COLUMN `last_login` DATETIME NULL DEFAULT NULL AFTER `password`');
+}
+
+ensureUsersLastLogin();

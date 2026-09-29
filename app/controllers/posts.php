@@ -1,5 +1,6 @@
 <?php
 require_once SITE_ROOT . "/app/database/db.php";
+require_once SITE_ROOT . "/app/include/post-rules.php";
 if (empty($_SESSION['id']) || (int) ($_SESSION['admin'] ?? 0) !== 1) {
    header('location: ' . (empty($_SESSION['id']) ? BASE_URL . 'log.php' : BASE_URL));
    exit();
@@ -12,63 +13,12 @@ $content = '';
 $topic = '';
 $img = '';
 $publish = 1;
+$createdDate = '';
+$updatedDate = '';
 
 $topics = selectAll('topics');
 $posts = selectAll('posts');
 $postsAdm = selectAllFromPostsWithUsers('posts', 'users');
-
-function storeUploadedPostImage($file, &$errMsg)
-{
-   if (empty($file['name'])) {
-      return null;
-   }
-   if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-      array_push($errMsg, "Failed to upload the image to the server");
-      return false;
-   }
-
-   $info = @getimagesize($file['tmp_name']);
-   $types = [
-      IMAGETYPE_JPEG => 'jpg',
-      IMAGETYPE_PNG => 'png',
-      IMAGETYPE_GIF => 'gif',
-      IMAGETYPE_WEBP => 'webp',
-   ];
-   if ($info === false || !isset($types[$info[2]])) {
-      array_push($errMsg, "The uploaded file is not an image!");
-      return false;
-   }
-
-   $imgName = time() . "_" . bin2hex(random_bytes(4)) . "." . $types[$info[2]];
-   $postsDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'assets' . DIRECTORY_SEPARATOR . 'img' . DIRECTORY_SEPARATOR . 'posts';
-   if (!is_dir($postsDir)) {
-      mkdir($postsDir, 0777, true);
-   }
-   $destination = $postsDir . DIRECTORY_SEPARATOR . $imgName;
-   if (!move_uploaded_file($file['tmp_name'], $destination)) {
-      array_push($errMsg, "Failed to upload the image to the server");
-      return false;
-   }
-   return $imgName;
-}
-
-function postFieldsAreValid($title, $content, $topic, &$errMsg)
-{
-   if ($title === '' || $content === '' || $topic === '' || $topic === 'Post category:') {
-      array_push($errMsg, "Please fill in all fields!");
-      return false;
-   }
-   if (mb_strlen($title, 'UTF-8') < 7) {
-      array_push($errMsg, "The post title must be longer than 7 characters");
-      return false;
-   }
-   $topicRow = selectOne('topics', ['id' => (int) $topic]);
-   if (!$topicRow) {
-      array_push($errMsg, "Choose a category.");
-      return false;
-   }
-   return true;
-}
 
 // Post creation form
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_post'])) {
@@ -106,6 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
       $topic = $post['id_topic'];
       $publish = $post['status'];
       $img = $post['img'];
+      $createdDate = $post['created_date'];
+      $updatedDate = $post['updated_date'];
    }
 }
 
@@ -117,6 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_post'])) {
    $publish = isset($_POST['publish']) ? 1 : 0;
    $existing = $id > 0 ? selectOne('posts', ['id' => $id]) : false;
    $img = $existing['img'] ?? '';
+   $createdDate = $existing['created_date'] ?? '';
+   $updatedDate = $existing['updated_date'] ?? '';
    $storedImage = storeUploadedPostImage($_FILES['img'] ?? [], $errMsg);
 
    if (!$existing) {
