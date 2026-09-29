@@ -35,24 +35,29 @@ require_once "../../app/controllers/posts.php";
                <span class="col-1"></span>
                <a href="<?php echo BASE_URL . "admin/posts/index.php"; ?>" class="col-3 btn btn-warning">Edit</a>
             </div>
+            <h2>Manage posts</h2>
+            <p class="queue-note">Unpublished posts are the review queue. The oldest submission is first. A reader's new post is stored unpublished until you publish it.</p>
             <div class="row title-table">
-               <h2>Manage posts</h2>
                <div class="col-1">ID</div>
-               <div class="col-5">Title</div>
-               <div class="col-2">Author</div>
-               <div class="col-4">Actions</div>
+               <div class="col-3">Title</div>
+               <div class="col-2">Created</div>
+               <div class="col-2">Updated</div>
+               <div class="col-1">Author</div>
+               <div class="col-3">Actions</div>
             </div>
             <?php foreach ($postsAdm as $key => $post) : ?>
-               <div class="row post">
+               <div class="row post<?= ((int) $post['status'] === 1) ? '' : ' queue'; ?>">
                   <div class="id col-1"><?= (int) $post['id']; ?></div>
-                  <div class="title col-5"><?= mb_substr($post['title'], 0, 50, 'UTF-8') . "..." ?></div>
-                  <div class="author col-2"><?= $post['username']; ?></div>
+                  <div class="title col-3"><?= htmlspecialchars(mb_substr($post['title'], 0, 40, 'UTF-8')) ?></div>
+                  <div class="col-2"><?= htmlspecialchars(formatAppDate($post['created_date'])); ?></div>
+                  <div class="col-2"><?= htmlspecialchars(formatAppDate($post['updated_date'])); ?></div>
+                  <div class="author col-1"><?= htmlspecialchars((string) $post['username']); ?></div>
                   <div class="red col-1"><a href="edit.php?id=<?= $post['id']; ?>">edit</a></div>
                   <div class="del col-1"><a href="edit.php?delete_id=<?= $post['id']; ?>">delete</a></div>
                   <?php if ($post['status']) : ?>
-                     <div class="status col-2"><a href="edit.php?publish=0&pub_id=<?= $post['id']; ?>">unpublish</a></div>
+                     <div class="status col-1"><a href="edit.php?publish=0&pub_id=<?= $post['id']; ?>">unpublish</a></div>
                   <?php else : ?>
-                     <div class="status col-2"><a href="edit.php?publish=1&pub_id=<?= $post['id']; ?>">publish</a></div>
+                     <div class="status col-1"><a href="edit.php?publish=1&pub_id=<?= $post['id']; ?>">publish</a></div>
                   <?php endif; ?>
                </div>
             <?php endforeach; ?>

@@ -48,8 +48,13 @@ function getBlogServices()
          'audience' => 'Readers'
       ],
       [
+         'title' => 'Submit an article',
+         'description' => 'Signed-in readers can send a post. The server stores it unpublished until an administrator publishes it from the review queue, oldest first.',
+         'audience' => 'Signed-in readers'
+      ],
+      [
          'title' => 'Admin panel',
-         'description' => 'Create posts, manage categories, users, and comment moderation.',
+         'description' => 'Create posts, manage categories and users, and review the unpublished post queue.',
          'audience' => 'Administrators'
       ]
    ];

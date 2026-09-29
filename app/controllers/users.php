@@ -16,14 +16,18 @@ if (!empty($_SESSION['flash_error'])) {
 if (!function_exists('userAuth')) {
 function userAuth($user)
 {
+   session_regenerate_id(true);
+   $now = date('Y-m-d H:i:s');
+   update('users', (int) $user['id'], ['last_login' => $now]);
    $_SESSION['id'] = $user['id'];
    $_SESSION['login'] = $user['username'];
    $_SESSION['admin'] = $user['admin'];
+   $_SESSION['last_login'] = $now;
 
    if ((int) $_SESSION['admin'] === 1) {
       header('location: ' . BASE_URL . "admin/posts/index.php");
    } else {
-      header('location: ' . BASE_URL);
+      header('location: ' . BASE_URL . 'profile.php');
    }
    exit();
 }

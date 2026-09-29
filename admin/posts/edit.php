@@ -38,6 +38,9 @@ require_once "../../app/controllers/posts.php";
                   <!-- Display the errors array -->
                   <?php include "../../app/helps/errorInfo.php"; ?>
                </div>
+               <?php if ($id !== '') : ?>
+                  <p class="text-muted">Created: <?= htmlspecialchars(formatAppDate($createdDate)); ?> · Last update: <?= htmlspecialchars(formatAppDate($updatedDate)); ?> (Europe/Kyiv)</p>
+               <?php endif; ?>
                <form action="edit.php" method="post" enctype="multipart/form-data">
                   <input type="hidden" name="id" value="<?= $id; ?>">
                   <div class="col mb-4">

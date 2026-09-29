@@ -3,7 +3,8 @@ require_once "path.php";
 require_once "app/controllers/topics.php";
 $postId = isset($_GET['post']) ? (int) $_GET['post'] : 0;
 $post = $postId > 0 ? selectPostFromPostsWithUserOnSingle('posts', 'users', $postId) : false;
-if (!$post) {
+$isAdminViewer = !empty($_SESSION['id']) && (int) ($_SESSION['admin'] ?? 0) === 1;
+if (!$post || ((int) $post['status'] !== 1 && !$isAdminViewer)) {
    header('location: ' . BASE_URL);
    exit();
 }
@@ -39,15 +40,16 @@ require_once "app/controllers/commentaries.php";
          <!-- Main content -->
          <div class="main-content col-md-9 col-12">
 
-            <h2><?php echo $post['title']; ?></h2>
+            <h2><?= htmlspecialchars($post['title']); ?></h2>
 
             <div class="single_post row">
                <div class="img col-12">
-                  <img src="<?= BASE_URL . 'assets/img/posts/' . $post['img'] ?>" alt="<?= $post['title'] ?>" class="img-thumbnail" style="height: 560px; width: 1080px;">
+                  <img src="<?= BASE_URL . 'assets/img/posts/' . rawurlencode($post['img']) ?>" alt="<?= htmlspecialchars($post['title']) ?>" class="img-thumbnail post-hero">
                </div>
                <div class="info">
-                  <i><?= $post['username']; ?></i>
-                  <i><?= $post['created_date']; ?></i>
+                  <i><?= htmlspecialchars((string) $post['username']); ?></i>
+                  <i>Created: <?= htmlspecialchars(formatAppDate($post['created_date'])); ?></i>
+                  <i>Updated: <?= htmlspecialchars(formatAppDate($post['updated_date'] ?? '')); ?></i>
                </div>
                <div class="single_post_text col-12">
                   <?= $post['content']; ?>

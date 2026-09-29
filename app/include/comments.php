@@ -30,7 +30,7 @@ include_once SITE_ROOT . "/app/controllers/commentaries.php";
          <?php foreach ($comments as $comment) : ?>
             <div class="one-comment col-12">
                <span><i class="far fa-envelope"></i> <?= htmlspecialchars($comment['email']); ?></span>
-               <span><i class="far fa-calendar-check"></i> <?= htmlspecialchars((string) $comment['created_date']); ?></span>
+               <span><i class="far fa-calendar-check"></i> <?= htmlspecialchars(formatAppDate($comment['created_date'])); ?></span>
                <?php if (!empty($comment['pending'])) : ?>
                   <span>Awaiting moderation</span>
                <?php endif; ?>

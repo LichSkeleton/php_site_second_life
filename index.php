@@ -58,7 +58,7 @@ $topTopic = selectTopTopicFromPostsOnIndex('posts');
                      <div class="carousel-item">
                      <?php endif; ?>
                      <img src="<?= BASE_URL . 'assets/img/posts/' . $post1['img'] ?>" alt="<?= $post1['title'] ?>" class="d-block w-100">
-                     <div class="carousel-caption-hack carousel-caption d-none d-md-block">
+                     <div class="carousel-caption-hack carousel-caption">
                         <h5><a href="<?= BASE_URL . 'single.php?post=' . $post1['id']; ?>"><?= substr($post1['title'], 0, 120) . "..." ?></a></h5>
                      </div>
                      </div>
@@ -101,7 +101,7 @@ $topTopic = selectTopTopicFromPostsOnIndex('posts');
                            <a href="<?= BASE_URL . 'single.php?post=' . $post['id']; ?>"><?= substr($post['title'], 0, 30) . "..." ?></a>
                         </h3>
                         <i><?= $post['username']; ?></i>
-                        <i><?= $post['created_date']; ?></i>
+                        <i><?= htmlspecialchars(formatAppDate($post['created_date'])); ?></i>
                         <p class="preview-text">
                            <?= mb_substr($post['content'], 0, 65, 'UTF-8') . "..." ?>
                         </p>

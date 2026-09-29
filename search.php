@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['search-term'])) {
                         <a href="<?= BASE_URL . 'single.php?post=' . $post['id']; ?>"><?= substr($post['title'], 0, 80) . "..." ?></a>
                      </h3>
                      <i><?= $post['username']; ?></i>
-                     <i><?= $post['created_date']; ?></i>
+                     <i><?= htmlspecialchars(formatAppDate($post['created_date'])); ?></i>
                      <p class="preview-text">
                         <?= mb_substr($post['content'], 0, 55, 'UTF-8') . "..." ?>
                      </p>

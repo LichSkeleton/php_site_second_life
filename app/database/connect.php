@@ -24,6 +24,7 @@ try {
         $db_pass,
         $options
     );
+    $pdo->exec("SET time_zone = '+03:00'");
 } catch (PDOException $i) {
     die("Database connection error");
 }
